@@ -1,12 +1,13 @@
 import pandas as pd
 import numpy as np
 import argparse
+import os
+import joblib
 import mlflow
 import mlflow.sklearn
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import root_mean_squared_error, r2_score
 
 def eval_metrics(actual, pred):
@@ -16,28 +17,31 @@ def eval_metrics(actual, pred):
 
 def main():
     parser = argparse.ArgumentParser(description="Navchannja modeli RandomForestRegressor dlya Bike Sharing Demand")
+    parser.add_argument("data_folder", type=str, help="Shlyah do papky z pidgotovlenymy danymy (data/prepared)")
+    parser.add_argument("models_folder", type=str, help="Shlyah do papky dlya zberezhennya modeley (np. models)")
     parser.add_argument("--max_depth", type=int, default=10, help="Maksymalna glybyna derev dlya RandomForest")
     args = parser.parse_args()
 
-    # Zavantazhennya danyh
-    print("Zavantazhennya danyh...")
-    df = pd.read_csv("data/raw/train.csv")
+    data_folder = args.data_folder
+    models_folder = args.models_folder
+    
+    # Stvorennya papky models, yaksho jiyi nemaye
+    os.makedirs(models_folder, exist_ok=True)
 
-    # Bazaova peredobrobka (feature engineering)
-    df['datetime'] = pd.to_datetime(df['datetime'])
-    df['hour'] = df['datetime'].dt.hour
-    df['day'] = df['datetime'].dt.day
-    df['month'] = df['datetime'].dt.month
-
-    # Vydalennya zai'vyh kolonok dlya unyknennya vytoku danyh
-    df = df.drop(columns=['datetime', 'casual', 'registered'])
+    # Zavantazhennya vze pidgotovlenyh danyh
+    print(f"Zavantazhennya danyh z {data_folder}...")
+    train_df = pd.read_csv(os.path.join(data_folder, "train.csv"))
+    test_df = pd.read_csv(os.path.join(data_folder, "test.csv"))
 
     # Rozdilennya na X ta y
-    X = df.drop(columns=['count'])
-    y = df['count']
-
-    # Rozbyttja na train ta test
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    if 'count' not in train_df.columns:
+        raise ValueError("Tsilyova zminna 'count' ne znaydena u train.csv")
+    
+    X_train = train_df.drop(columns=['count'])
+    y_train = train_df['count']
+    
+    X_test = test_df.drop(columns=['count'])
+    y_test = test_df['count']
 
     # Inicializatsia MLflow
     mlflow.set_experiment("bike-sharing-demand")
@@ -73,14 +77,19 @@ def main():
         mlflow.log_metric("test_rmse", test_rmse)
         mlflow.log_metric("test_r2", test_r2)
 
-        # Zberigannya modeli
+        # Zberigannya modeli v MLflow
         mlflow.sklearn.log_model(model, "model")
         print("Model zberezheno v MLflow.")
+        
+        # Zberigannya modeli lokaly'no za dopomogoyu joblib
+        model_path = os.path.join(models_folder, "rf_model.pkl")
+        joblib.dump(model, model_path)
+        print(f"Model zberezheno lokal'no: {model_path}")
 
         # Pobudova grafiku Feature Importance
         importances = model.feature_importances_
         indices = np.argsort(importances)[::-1]
-        features = X.columns
+        features = X_train.columns
         
         plt.figure(figsize=(10, 6))
         sns.barplot(x=importances[indices], y=[features[i] for i in indices], palette="viridis")
