@@ -1,0 +1,37 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: ./venv/bin/python3 src/prepare.py data/raw/train.csv data/prepared
+    deps:
+    - path: data/raw/train.csv
+      hash: md5
+      md5: 2219249bc86a065cdadae737a7e3033d
+      size: 648353
+    - path: src/prepare.py
+      hash: md5
+      md5: e8a71f1895edbc1eb31e8299911b1929
+      size: 2938
+    outs:
+    - path: data/prepared
+      hash: md5
+      md5: ed4a5a3d1b8ea68d58c31dde66a3732f.dir
+      size: 447485
+      nfiles: 2
+  train:
+    cmd: ./venv/bin/python3 src/train.py data/prepared models --max_depth 10
+    deps:
+    - path: data/prepared
+      hash: md5
+      md5: ed4a5a3d1b8ea68d58c31dde66a3732f.dir
+      size: 447485
+      nfiles: 2
+    - path: src/train.py
+      hash: md5
+      md5: 1361674d33d3205d7c37e44636c17be3
+      size: 5126
+    outs:
+    - path: models
+      hash: md5
+      md5: 6f66034701d0ecb7a4b31a36dc0652d4.dir
+      size: 10264657
+      nfiles: 1
