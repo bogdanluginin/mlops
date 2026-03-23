@@ -9,3 +9,4 @@ dvc
 hydra-core
 optuna
 omegaconf
+pytest

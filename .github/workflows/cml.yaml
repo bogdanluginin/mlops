@@ -1,0 +1,42 @@
+name: CML Report Workflow
+
+on: [push]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Setup CML
+        uses: iterative/setup-cml@v2
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: DVC Pull
+        run: dvc pull
+
+      - name: Run Pytest Quality Gate
+        run: pytest tests/
+
+      - name: Generate CML Report
+        if: always()
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "# Quality Gate Report" > report.md
+          echo "## Model Metrics" >> report.md
+          echo "\`\`\`json" >> report.md
+          cat metrics.json >> report.md
+          echo "\`\`\`" >> report.md
+          
+          cml comment create report.md

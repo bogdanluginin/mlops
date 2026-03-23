@@ -82,11 +82,16 @@ def optimize(cfg: DictConfig):
         # Run optimization
         study.optimize(objective, n_trials=cfg.hpo.n_trials)
         
-        # Log best params and metric in the parent run
+        # Логуємо найкращі параметри та метрику у батьківський run
         mlflow.log_params(study.best_params)
         mlflow.log_metric("best_rmse", study.best_value)
         
-        print("\nOptimization completed.")
+        # Зберігаємо метрики у файл для тестування (Quality Gate)
+        import json
+        with open("metrics.json", "w") as f:
+            json.dump({"rmse": study.best_value}, f)
+        
+        print("\nОптимізація завершена.")
         print("Best trial:")
         print(f"  RMSE: {study.best_value:.4f}")
         print("  Params: ")
