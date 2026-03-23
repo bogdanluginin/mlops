@@ -6,3 +6,6 @@ seaborn
 mlflow
 jupyter
 dvc
+hydra-core
+optuna
+omegaconf

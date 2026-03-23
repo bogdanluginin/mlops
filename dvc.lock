@@ -18,7 +18,7 @@ stages:
       size: 447485
       nfiles: 2
   train:
-    cmd: ./venv/bin/python3 src/train.py data/prepared models --max_depth 10
+    cmd: ./venv/bin/python3 src/train.py data/prepared models --max_depth 12
     deps:
     - path: data/prepared
       hash: md5
@@ -32,6 +32,6 @@ stages:
     outs:
     - path: models
       hash: md5
-      md5: 6f66034701d0ecb7a4b31a36dc0652d4.dir
-      size: 10264657
+      md5: d7a8b4dfb0415900d0ba10eb437e8e92.dir
+      size: 23463697
       nfiles: 1

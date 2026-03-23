@@ -1,0 +1,18 @@
+mlflow:
+  experiment_name: 'Bike_Sharing_Optuna'
+
+data:
+  processed_path: 'data/prepared/train.csv'
+
+hpo:
+  n_trials: 20
+  sampler: 'tpe'
+  metric: 'rmse'
+  direction: 'minimize'
+  search_space:
+    max_depth:
+      low: 5
+      high: 20
+    n_estimators:
+      low: 50
+      high: 200

@@ -7,7 +7,7 @@ stages:
     outs:
       - data/prepared
   train:
-    cmd: ./venv/bin/python3 src/train.py data/prepared models --max_depth 10
+    cmd: ./venv/bin/python3 src/train.py data/prepared models --max_depth 12
     deps:
       - data/prepared
       - src/train.py
